@@ -1,0 +1,40 @@
+schema: obsidian-course-state/v1
+course_code: COURSE_CODE
+course_name: ""
+standard_version: "2.1"
+status: active
+
+structure:
+  unit_scheme: week
+  current_unit: 0
+
+gold_reference:
+  note: ""
+  visual_baseline: ""
+
+completed: []
+# Example after first delivery:
+# completed:
+#   - unit: Week01
+#     status: draft
+#     artifacts:
+#       - type: lecture
+#         file: "Week01/Lecture 01 - Topic.md"
+#         status: draft
+#       - type: tutorial
+#         file: "Week01/Tutorial 01 - Topic.md"
+#         status: draft
+#
+# When the user accepts one artifact, update only that artifact.
+# Set the unit to accepted only when all currently required artifacts are accepted.
+
+course_overrides: []
+
+next_expected:
+  unit: Week01
+  expected_types:
+    - lecture
+
+last_delivery:
+  package: ""
+  date: ""
