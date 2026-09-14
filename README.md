@@ -6,7 +6,7 @@
 
 Turn raw lectures, tutorials, labs, readings, and PDFs into structured course notes through a persistent standard, course state, incremental delivery, and human review.
 
-[![Version](https://img.shields.io/badge/version-v2.1.0-blue.svg)](../../releases/tag/v2.1.0)
+[![Version](https://img.shields.io/badge/version-v2.2.0-blue.svg)](../../releases/tag/v2.2.0)
 [![Status](https://img.shields.io/badge/status-frozen-success.svg)](#versioning)
 [![Obsidian](https://img.shields.io/badge/Obsidian-ready-7C3AED.svg)](https://obsidian.md/)
 [![Markdown](https://img.shields.io/badge/Markdown-compatible-black.svg)](https://www.markdownguide.org/)
@@ -277,10 +277,10 @@ This makes the workflow portable between agents without turning conversation his
 The current stable baseline is:
 
 ```text
-v2.1.0
+v2.2.0
 ```
 
-`v2.1` is frozen.
+`v2.2` is frozen.
 
 A new Global Standard version should only be created when actual course usage reveals a **cross-course common problem**.
 
@@ -300,7 +300,7 @@ This keeps the global contract stable while allowing individual courses to evolv
 
 ## Project Status
 
-**v2.1.0 — Frozen baseline**
+**v2.2.0 — Frozen baseline**
 
 The current version is intended for real course-note production.
 
