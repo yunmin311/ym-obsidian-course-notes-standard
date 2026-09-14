@@ -125,7 +125,7 @@ Then set the course code, course name, current unit, and any course-specific ove
 The agent should have access to:
 
 ```text
-Obsidian_Course_Notes_Standard_v2.1.md
+Obsidian_Course_Notes_Standard_v2.2.md
 SKILL.md
 COURSE_STATE.yaml
 ```
@@ -203,7 +203,7 @@ COURSE_CODE_UnitXX_Delivery.zip
 
 | File | Role |
 | --- | --- |
-| `Obsidian_Course_Notes_Standard_v2.1.md` | Canonical global specification |
+| `Obsidian_Course_Notes_Standard_v2.2.md` | Canonical global specification |
 | `SKILL.md` | Execution contract for AI agents |
 | `TEMPLATE.md` | Minimum note structure |
 | `COURSE_STATE_TEMPLATE.yaml` | Persistent course-state template |

@@ -39,7 +39,7 @@ Agent 不应重新询问已经固化的写作、视觉、SVG、公式、代码�
 最稳妥的输入组合：
 
 ```text
-1. Obsidian_Course_Notes_Standard_v2.1.md
+1. Obsidian_Course_Notes_Standard_v2.2.md
 2. 最新 COURSE_STATE.yaml
 3. 本周新材料
 ```
@@ -67,9 +67,9 @@ COURSE_CODE_Week02_Delivery.zip
 
 直接解压到课程根目录，允许新的 `COURSE_STATE.yaml` 覆盖旧版本。不要把旧 Week/Unit 每次全部重新打包。
 
-## Source dependency check
+## Source 依赖检查
 
-If any delivered Markdown references a file under `sources/`, that referenced file must be present in the Delivery ZIP. `sources/` is optional only when no delivered artifact depends on it.
+如果任何已交付 Markdown 引用了 `sources/` 下的文件，被引用的 source file 必须包含在同一个 Delivery ZIP 中。只有所有已交付 artifact 都不依赖 `sources/` 时，`sources/` 才可以省略。
 
 ## Acceptance
 

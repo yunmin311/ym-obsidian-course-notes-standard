@@ -1,7 +1,7 @@
 schema: obsidian-course-state/v1
 course_code: COURSE_CODE
 course_name: ""
-standard_version: "2.1"
+standard_version: "2.2"
 status: active
 
 structure:
