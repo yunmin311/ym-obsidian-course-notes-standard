@@ -1,4 +1,4 @@
-# Obsidian Course Notes Standard v2.1
+# Obsidian Course Notes Standard v2.2
 
 > **Canonical Standard**  
 > 适用于所有 Lecture / Tutorial / Reading / Lab / Coding 类课程笔记。  
@@ -320,27 +320,76 @@ Router 收到 packet。
 
 ## 5.2 PPT / PDF 截图裁剪规则
 
-截图不是“截整页”。原则是 **保留知识，删除 PPT 外壳**。
+截图裁剪的第一原则不是“尽可能紧”，而是 **语义完整优先（semantic completeness first）**。只有在裁剪后仍能完整理解原图时，才允许进行局部裁图。
 
-必须尽量裁掉：
+### 5.2.1 先判断能不能安全裁
 
-- slide 标题（如果正文已经有标题）；
+在裁图前，先判断当前图是否依赖周围信息。只要理解这张图还需要下面任意内容，它们就属于图的 **semantic envelope（语义包络）**，不能被裁掉：
+
+- 相邻公式、变量定义、推导步骤；
+- 坐标轴、刻度、单位、legend；
+- 箭头、极性、电场/电流方向、边界标记；
+- panel 编号、左右/上下对照关系；
+- 图注、caption、直接解释图的短句；
+- worked example 中与图绑定的已知条件、计算关系或结论；
+- 电路图、波形图、multi-panel figure 中不可分离的配套信息。
+
+**判断标准：裁完以后，这张图必须在不重新打开原 PPT / PDF 的情况下仍然能被正确理解。** 如果做不到，就说明裁得过头。
+
+### 5.2.2 不同图型使用不同裁剪强度
+
+**可紧裁（tight crop）**：独立结构图、单一网络拓扑、单一 block diagram、主体与标签都集中在一个区域，且外围内容不参与理解。
+
+**默认宽裁（wide crop）**：以下类型优先保留更完整的上下文，不追求极致紧凑：
+
+- math-heavy figure；
+- 公式与图形联合出现的页面；
+- circuit diagram；
+- waveform / timing diagram；
+- plotted figure / function graph；
+- worked example；
+- multi-panel comparison；
+- 含大量边界标签、方向标记、单位或图例的技术图。
+
+对于这些内容，宁可多保留一些合理白边，也不能为了“干净”切掉语义。
+
+### 5.2.3 无法安全局部裁切时的 fallback
+
+如果图与周围公式、解释或多个 panel 无法安全分离，按以下顺序处理：
+
+`宽裁 / 半页裁图 → 嵌入原 PDF 页面 → 静态 SVG 重构`
+
+其中：
+
+- **宽裁 / 半页裁图**：保留完整 semantic envelope，只删除明显无关区域；
+- **原 PDF 页面**：当整页上下文本身就是教学内容时，直接嵌入 source page；
+- **静态 SVG 重构**：仅在原图确实不适合直接使用、且可以不丢失技术含义地重构时使用。
+
+### 5.2.4 可以删除什么
+
+在确认语义完整后，才尽量裁掉：
+
+- 与正文重复且不参与理解的 slide 标题；
 - 页码；
-- 大面积无意义白边；
 - decorative background；
 - 与当前知识无关的文字；
+- 明显无意义的大面积空白；
 - 空的边角和版式占位。
 
-保留：
+### 5.2.5 必须保留什么
 
-- 图中的必要标签；
+必须保留所有理解所需的：
+
+- 图中标签；
 - 图例；
-- 箭头；
-- 坐标轴；
-- 直接解释图的短句；
+- 箭头与方向；
+- 坐标轴、刻度和单位；
+- 极性、边界和区域标记；
+- panel 标号与比较关系；
+- 相关公式、变量定义与必要说明；
 - 与图不可分离的上下文。
 
-裁图四周保留约 **4–8% 的呼吸边距**，不能贴边切文字，也不能保留 30–50% 的空白。
+裁图四周通常保留约 **4–8% 的呼吸边距**；但这只是视觉建议，**不能凌驾于语义完整性**。对公式密集、多 panel、电路、波形和 worked example，允许明显更宽的边距。
 
 截图必须从 PDF/PPT 高分辨率渲染后裁，不从聊天截图二次裁剪。
 
@@ -1023,7 +1072,7 @@ COURSE_CODE_WeekXX_Delivery.zip
 ```yaml
 schema: obsidian-course-state/v1
 course_code: COURSE_CODE
-standard_version: "2.1"
+standard_version: "2.2"
 status: active
 
 structure:
@@ -1126,7 +1175,7 @@ Gold Reference 的地位低于 Global Standard，但高于 Agent 自己的写作
 
 **Course-specific**：只影响某一门课，例如某课程要求每章保留公式索引。写进 `course_overrides`，不升级 Global Standard。
 
-**Global**：未来所有课程都应该遵守，例如“SVG 默认静态”“PPT 好图优先裁图”。更新本 Standard，版本号从 `2.1 → 2.2`。
+**Global**：未来所有课程都应该遵守，例如“SVG 默认静态”“PPT 好图优先裁图”。更新本 Standard，版本号从 `2.2 → 2.3`。
 
 Standard 升级后，不自动重写过去所有 Week。旧笔记只有用户明确要求时才迁移。
 
