@@ -60,7 +60,7 @@
 
 ### Task 5: GitHub delivery
 
-- [ ] Create `release/v3.0.0` from `main`.
-- [ ] Commit the complete v3.0 file set.
-- [ ] Create PR to `main` with migration summary and verification evidence.
+- [x] Create `release/v3.0.0` from `main`.
+- [x] Commit the complete v3.0 file set.
+- [x] Create PR to `main` with migration summary and verification evidence.
 - [ ] Do not merge or publish the release until human review.

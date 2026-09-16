@@ -28,6 +28,34 @@ REQUIRED_STANDARD_MARKERS = [
     "Pre-delivery Visual Audit",
 ]
 
+# Tokens that unambiguously mean "the standard's version".
+#
+# Deliberately NOT a bare `\d+\.\d+` scan: active files legitimately mention
+# unrelated versions (tool versions, GitHub Action tags, external citations),
+# and a naked number scan would turn every future upgrade into a false alarm.
+# These three families are the ones the standard itself uses to refer to its
+# own version, so a wrong value in any of them is always a real defect:
+#   1. the versioned canonical filename — Obsidian_Course_Notes_Standard_vX.Y.md
+#   2. the Course State version key       — standard_version: "X.Y"
+#   3. the `v`-prefixed version token     — vX.Y / vX.Y.Z
+ACTIVE_VERSION_PATTERNS = (
+    r"Obsidian_Course_Notes_Standard_v(?P<ver>\d+\.\d+(?:\.\d+)?)\.md",
+    r"standard_version\s*:\s*[\"']?(?P<ver>\d+\.\d+(?:\.\d+)?)",
+    r"\bv(?P<ver>\d+\.\d+(?:\.\d+)?)\b",
+)
+
+# NOTE: CHANGELOG.md and the historical docs/superpowers/** specs and plans are
+# intentionally absent from ACTIVE_FILES — they are records of superseded
+# versions and must stay free to mention v2.x / v3.0 forever.
+
+
+def active_version_tokens(text: str) -> set[str]:
+    """Return every version token that refers to the standard itself."""
+    tokens: set[str] = set()
+    for pattern in ACTIVE_VERSION_PATTERNS:
+        tokens.update(match.group("ver") for match in re.finditer(pattern, text))
+    return tokens
+
 
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
@@ -79,15 +107,24 @@ def validate(root: Path) -> list[str]:
     else:
         errors.append("COURSE_STATE_TEMPLATE.yaml is missing")
 
-    stale_patterns = [r"\bv2\.1(?:\.0)?\b", r"\bv2\.2(?:\.0)?\b", r'"2\.1"', r'"2\.2"']
+    # Version legitimacy is derived from VERSION, not hardcoded, so the gate
+    # keeps working after the next upgrade without touching this file.
+    # Only the current full (x.y.z) and short (x.y) forms are legal; anything
+    # else — an older release that was left behind, or a newer one referenced
+    # before VERSION was bumped — is drift.
+    allowed_versions = {short, version}
     active_paths = [canonical] + [root / name for name in ACTIVE_FILES]
     for path in active_paths:
         if not path.exists():
             continue
         text = path.read_text(encoding="utf-8")
-        for pattern in stale_patterns:
-            if re.search(pattern, text):
-                errors.append(f"stale active version reference {pattern!r} in {path.name}")
+        stale = sorted(token for token in active_version_tokens(text) if token not in allowed_versions)
+        if stale:
+            rendered = ", ".join(f"v{token}" for token in stale)
+            errors.append(
+                f"stale active version reference {rendered} in {path.name} "
+                f"(VERSION is {version}; expected v{short} or v{version})"
+            )
 
     skill = root / "SKILL.md"
     if skill.exists():
