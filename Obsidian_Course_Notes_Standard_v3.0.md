@@ -1,4 +1,4 @@
-# Obsidian Course Notes Standard v2.2
+# Obsidian Course Notes Standard v3.0
 
 > **Canonical Standard**  
 > 适用于所有 Lecture / Tutorial / Reading / Lab / Coding 类课程笔记。  
@@ -13,7 +13,7 @@
 
 1. **知识正确**：不把模型补充、外部常识或推断伪装成课件原意。
 2. **讲清机制**：不能只列定义和结论；关键知识要解释“为什么出现、内部怎样工作、结果是什么、与前后概念怎样连接”。
-3. **视觉承担信息**：能用原课件好图说明的，不重新画；原图不适合直接用时再做静态 SVG；表格、公式、代码、流程图各自只承担最适合自己的信息。
+3. **视觉有来源层级**：优先保留当前课程原始材料中的高质量视觉；原图无法安全提取时，再检索可信教材、大学课程或官方技术资料中的等价图；SVG 只承担低风险、结构明确的简单图示。任何视觉资产在进入笔记前都必须通过独立 QA。
 4. **Obsidian 稳定**：所有链接使用相对路径；Markdown、MathJax、图片和 SVG 在 Obsidian 中可直接渲染；不得依赖本机绝对路径。
 5. **密度适中**：正文不能碎成知识卡片，也不能变成连续的大段墙。有当前课程 Gold Reference 时以其密度为校准；没有 Gold Reference 时采用 moderate density：连续解释为主，必要时用表格、图、公式、短流程形成自然视觉停顿。
 
@@ -249,9 +249,9 @@ Router 收到 packet。
 |---|---|---|---|
 |概念解释|连续正文|短定义引用|bullet dump|
 |并列属性|表格 / 短列表|正文|每项单独标题|
-|因果机制|正文 + 静态 SVG / 原图|短流程|纯 bullet|
-|时间/步骤流程|原课件图 / 静态 SVG|编号步骤|动画|
-|协议交互|Sequence-style 静态 SVG|横向流程|长文字来回描述|
+|因果机制|正文 + 原课程图 / 可信外部图|低风险静态 SVG / 短流程|纯 bullet|
+|时间/步骤流程|原课程图 / 可信外部图|静态 SVG / 编号步骤|动画|
+|协议交互|原课程图 / 官方资料图|Sequence-style 静态 SVG / 横向流程|长文字来回描述|
 |概念对比|表格 + 一段解释|双栏 SVG|重复两遍正文|
 |公式|MathJax + 解释|源图|截图公式|
 |公式推导|MathJax aligned|逐行公式|只给最终式|
@@ -261,9 +261,9 @@ Router 收到 packet。
 |程序输出|text block|表格|与代码混在同一块|
 |算法过程|伪代码 / 静态流程图|代码|长篇 prose|
 |数据对比|表格|图表|无理由做饼图|
-|趋势/函数关系|原课件图 / 静态 plot|MathJax|纯口述|
-|网络拓扑/结构|原课件裁图|静态 SVG|大面积 Mermaid 默认图|
-|状态机|原课件图 / 静态 SVG|Mermaid|动画|
+|趋势/函数关系|原课程图 / 教材或官方 plot|MathJax / verified static plot|纯口述|
+|网络拓扑/结构|原课程图 / 官方资料图|低风险静态 SVG|大面积 Mermaid 默认图|
+|状态机|原课程图 / 官方资料图|静态 SVG / Mermaid|动画|
 |警告/边界条件|短引用或 callout|正文粗体|整页 callout|
 |整页 PPT 都有价值|嵌入 PDF page|整页截图|重新抄写整页|
 
@@ -271,217 +271,248 @@ Router 收到 packet。
 
 # 5. 图片与视觉资产标准
 
-## 5.1 视觉选择优先级
+视觉资产不是装饰，也不是“有图就比没图好”。它必须承担正文难以替代的信息，并且在来源、完整性和技术正确性上可追溯。**视觉选择只发生在已经确认“这一处确实需要视觉表达”之后；第一次教学仍以正文为默认载体。**
 
-视觉资产严格按以下优先级判断：
+## 5.1 Visual Source Hierarchy
 
-### Priority A — 原课件已有好图：直接用
+所有课程统一使用以下四级来源层级。Agent 必须自行判断是否升级，不把明显不合格的候选图交给用户做第一次 QA。
 
-如果 PPT / PDF 的图已经清楚表达知识，**不要重新生成**。高分辨率渲染对应页，然后只裁出真正有价值的区域。
+### Level 1 — 当前课程原始材料
 
-适用：
-- 网络拓扑；
-- 电路图；
-- block diagram；
-- 曲线；
-- 状态转换；
-- 结构示意；
-- 教师特制案例图；
-- 有教学语义的表格。
+第一优先级永远是当前课程的 PPT / PDF / handout / teacher-provided figure。
 
-### Priority B — 整页上下文都有价值：嵌入原 PDF 页面
+优先动作：
+
+1. 以高分辨率渲染源页；
+2. 识别当前知识点真正需要的 semantic object；
+3. 连同必要公式、标签、caption、坐标、箭头、极性和关联 panel 一起裁出；
+4. 删除明确无关的 slide 外壳、标题、页码、logo、装饰和无意义空白；
+5. 裁完后重新视觉审查，而不是直接写入 Markdown。
+
+同源 PDF page embed 也属于 Level 1。当一个视觉对象无法从整页安全分离，或者“图 + 公式 + caption + 多 panel”本来就是一个完整教学单元时，可直接嵌入 source page，而不是强行切碎。
+
+### Level 2 — 可信外部原图
+
+如果 Level 1 经过 **最多两次合理裁切尝试** 仍不能同时满足“语义完整 + 视觉干净 + 边界安全”，停止继续猜 crop，升级到外部检索。
+
+优先来源：
+
+1. 本课程指定教材、教材配套资源、出版社/作者公开资源；
+2. 大学公开课程、官方 handout、OpenCourseWare / OER；
+3. 器件厂商、标准组织、官方技术文档；
+4. 其他高可信技术资料。
+
+外部图进入笔记前必须做 **semantic equivalence check**：
+
+- 是否讲的是同一个概念和同一种模型；
+- 电流、电场、极性、方向、符号约定是否一致；
+- 坐标定义、变量、边界条件和近似条件是否一致；
+- 是否因为教材版本或领域约定不同而产生潜在歧义。
+
+只要这些条件存在不确定，就不能用“看起来差不多”的外部图替代课程原图。
+
+外部视觉必须显式标注为 **External Supplement** 并记录来源。只有在允许合理再分发的前提下才把图像文件直接打进 `assets/`；如果许可不明确，不应把受版权限制的教材图重新打包分发，可改用链接/引用，或继续升级到 Level 3 / Level 4。
+
+### Level 3 — 静态 SVG / 可控重绘
+
+SVG 的优先级低于可信外部原图。它只适合 **低风险、结构明确、不会因一个箭头或极性画错就改变知识结论** 的图，例如：
+
+- 简单 block diagram；
+- 清晰的流程或层级关系；
+- 无歧义的 architecture overview；
+- 由正文明确数据直接构成的简单示意。
+
+以下高风险内容默认不得为了“有图”而自行重绘：
+
+- PN junction / carrier movement / electric field direction；
+- 极性、电流方向、器件内部机制；
+- 复杂电路拓扑；
+- I–V characteristic、精确坐标图、波形、实验曲线；
+- 多 panel 中依赖空间关系的技术图；
+- 任何 Agent 无法逐项验证的图。
+
+只有当重绘内容可以逐项对照可靠 source 验证，才允许使用 SVG。
+
+### Level 4 — Manual Capture Required
+
+前三层都无法得到可信视觉、但该图对理解又不可替代时，才允许把该处交给用户人工截图。
+
+这种情况必须极少，并在 draft 中明确标记：
 
 ```markdown
-![[sources/Lecture01.pdf#page=34]]
+> **待补原图：** 请从 Lecture XX p.XX 截取 [具体对象]，需保留 [必须保留的信息]。
 ```
 
-不要为了“保持风格”把整张 slide 截成 PNG。如果整页有价值，PDF page 更清晰、更可追溯。
-
-### Priority C — 原图差，但结构值得画：静态 SVG
-
-只有在以下情况才生成 SVG：
-
-- 原课件没有图；
-- 原图太模糊 / 空白过大 / 信息组织很差；
-- 需要把散落在多页的机制合成一张结构图；
-- 一段 prose 明显不如图直观。
-
-**课程笔记默认禁止动画 SVG。** 动画只在用户明确要求教学动画时作为额外资产提供，不得替代静态主图。
-
-### Priority D — 简单关系不值得做图：表格 / inline flow
-
-例如：
-
-`Client → Request → Server → Response`
-
-如果这已经足够，就不要画一个大图。
+不能用残缺图、错误 SVG 或无来源替代图掩盖失败。
 
 ---
 
-## 5.2 PPT / PDF 截图裁剪规则
+## 5.2 Semantic Envelope：先判断“什么必须一起保留”
 
-截图裁剪的第一原则不是“尽可能紧”，而是 **语义完整优先（semantic completeness first）**。只有在裁剪后仍能完整理解原图时，才允许进行局部裁图。
-
-### 5.2.1 先判断能不能安全裁
-
-在裁图前，先判断当前图是否依赖周围信息。只要理解这张图还需要下面任意内容，它们就属于图的 **semantic envelope（语义包络）**，不能被裁掉：
+截图裁剪的第一原则是 **semantic completeness first**，而不是“尽可能紧”。当前视觉对象的 semantic envelope 包含所有离开后会改变理解的信息，例如：
 
 - 相邻公式、变量定义、推导步骤；
 - 坐标轴、刻度、单位、legend；
-- 箭头、极性、电场/电流方向、边界标记；
-- panel 编号、左右/上下对照关系；
-- 图注、caption、直接解释图的短句；
-- worked example 中与图绑定的已知条件、计算关系或结论；
-- 电路图、波形图、multi-panel figure 中不可分离的配套信息。
+- 下标、上标、希腊字母、符号说明；
+- 箭头、电流方向、电场方向、polarity；
+- 区域边界、depletion width、reference line；
+- panel 编号与左右/上下比较关系；
+- caption、figure title、短说明；
+- worked example 的已知条件、约束与结论；
+- 与图不可分离的电路、波形、paired comparison。
 
-**判断标准：裁完以后，这张图必须在不重新打开原 PPT / PDF 的情况下仍然能被正确理解。** 如果做不到，就说明裁得过头。
+**裁完后必须能在不重新打开原 slide 的情况下正确理解该图。** 做不到就说明当前 crop 无效。
 
-### 5.2.2 不同图型使用不同裁剪强度
+## 5.3 Crop Strategy
 
-**可紧裁（tight crop）**：独立结构图、单一网络拓扑、单一 block diagram、主体与标签都集中在一个区域，且外围内容不参与理解。
+### 5.3.1 Tight crop 只用于真正独立的小对象
 
-**默认宽裁（wide crop）**：以下类型优先保留更完整的上下文，不追求极致紧凑：
+可以紧裁的对象：单一 block、独立小结构图、单张 topology、主体和全部标签天然集中在一个区域的图。
+
+即使 tight crop，也不能让文字、箭头、线条、坐标或 caption 贴边。必须保留可见的 breathing room。
+
+### 5.3.2 Wide crop 是技术图的默认策略
+
+以下类型默认使用 wide crop，不追求极致紧凑：
 
 - math-heavy figure；
-- 公式与图形联合出现的页面；
 - circuit diagram；
 - waveform / timing diagram；
-- plotted figure / function graph；
+- function graph / plotted figure；
 - worked example；
 - multi-panel comparison；
-- 含大量边界标签、方向标记、单位或图例的技术图。
+- 公式与图形联合出现的页面；
+- 含大量边界标签、方向、单位或 caption 的技术图。
 
-对于这些内容，宁可多保留一些合理白边，也不能为了“干净”切掉语义。
+如果两个 panel 在语义上共同解释同一机制，优先裁成一张横向组合图，不为了“图片更小”强行拆开。
 
-### 5.2.3 无法安全局部裁切时的 fallback
+### 5.3.3 Boundary Safety
 
-如果图与周围公式、解释或多个 panel 无法安全分离，按以下顺序处理：
+进入 Markdown 前必须检查四边：
 
-`宽裁 / 半页裁图 → 嵌入原 PDF 页面 → 静态 SVG 重构`
+- 任何文字行、公式、坐标、曲线、箭头或 circuit wire 都不能被边界截断；
+- meaningful foreground 不应紧贴画布边缘；
+- 不得留下半截文字、半个 panel、半条坐标轴或一小块无关 slide 残片；
+- 不得因为去除黑边而切掉 source content；
+- 技术图宁可多留一圈合理白边，也不要贴边。
 
-其中：
+经验上，最终 crop 应留出与源图视觉密度协调的安全边距。Agent 不应机械使用固定像素值，而应根据原图字号、线宽和 panel 间距判断。
 
-- **宽裁 / 半页裁图**：保留完整 semantic envelope，只删除明显无关区域；
-- **原 PDF 页面**：当整页上下文本身就是教学内容时，直接嵌入 source page；
-- **静态 SVG 重构**：仅在原图确实不适合直接使用、且可以不丢失技术含义地重构时使用。
+## 5.4 Visual QA Gate
 
-### 5.2.4 可以删除什么
+**每一张最终资产都必须在写入 Markdown 前单独过 Gate。** “已经生成文件”不等于“可以使用”。
 
-在确认语义完整后，才尽量裁掉：
+### Gate A — Semantic completeness
 
-- 与正文重复且不参与理解的 slide 标题；
-- 页码；
-- decorative background；
-- 与当前知识无关的文字；
-- 明显无意义的大面积空白；
-- 空的边角和版式占位。
+- 主要对象是否完整；
+- 公式、变量、axis、unit、legend、caption 是否保全；
+- multi-panel 是否被错误拆分；
+- 该图脱离原 slide 后是否仍能独立读懂。
 
-### 5.2.5 必须保留什么
+### Gate B — Technical correctness
 
-必须保留所有理解所需的：
+- 电流、电场、箭头、极性是否正确；
+- symbol / subscript / superscript 是否正确；
+- 外部图是否与本课件模型和约定一致；
+- SVG / 重绘是否能逐项对照可靠 source。
 
-- 图中标签；
-- 图例；
-- 箭头与方向；
-- 坐标轴、刻度和单位；
-- 极性、边界和区域标记；
-- panel 标号与比较关系；
-- 相关公式、变量定义与必要说明；
-- 与图不可分离的上下文。
+### Gate C — Visual cleanliness
 
-裁图四周通常保留约 **4–8% 的呼吸边距**；但这只是视觉建议，**不能凌驾于语义完整性**。对公式密集、多 panel、电路、波形和 worked example，允许明显更宽的边距。
+- 无黑边、断字、断线；
+- 无无关文字残片；
+- 无明显失衡空白；
+- 不把 slide 标题、logo、页码留进图，除非它们本身有教学意义。
 
-截图必须从 PDF/PPT 高分辨率渲染后裁，不从聊天截图二次裁剪。
+### Gate D — Boundary safety
 
-## 5.3 图片在正文中的位置
+四边都要留出合理 breathing room；任何接近被切断的元素都视为失败，而不是“勉强能看”。
 
-图必须放在**第一次真正需要它解释机制的位置**，而不是统一塞到章节尾部。
+### Gate E — Adaptive sizing
 
-正确：
+图片显示大小由 **信息密度、aspect ratio、阅读距离** 决定，而不是统一宽度。
 
-```markdown
-这一段先说明为什么 access network 需要 edge router。
+建议范围仅作为默认参考：
 
-![Campus Access Path](assets/L01-p34-campus-access.png)
+- 小型独立示意：约 280–420 px；
+- 单个电路 / 单图机制：约 420–620 px；
+- 完整 graph / multi-panel / 横向技术图：约 620–820 px；
+- 极复杂且必须全宽阅读的图：可接近正文全宽。
 
-图中 Wi-Fi AP ...
-```
+同一篇笔记允许不同图片使用不同宽度。简单图不要无意义放大，复杂图也不能为了版面整齐而缩到看不清。
 
-不要写：
+## 5.5 Pre-delivery Visual Audit
 
-```markdown
-下面是一些相关图片：
-...
-```
+正式 ZIP 前，Agent 必须进行一次 **全资产视觉审计**：
 
-图片前后至少有一句正文建立语境；图后如果图本身不自解释，需要一段解释最关键关系。
+1. 汇总本次 Markdown 实际引用的所有视觉资产；
+2. 逐张打开或生成 contact sheet；
+3. 按 Gate A–E 复查；
+4. 任一资产失败时，回到对应来源层级修复或升级；
+5. 只有全部引用资产通过后，才允许进入正式 Delivery。
 
-## 5.4 图片大小与留白
+审计必须覆盖 **实际被 Markdown 引用的最终文件**，不能只检查中间候选图。
 
-默认图片应占正文内容宽度的大约 **65–90%**。结构复杂、横向关系多时可以接近全宽；简单图不要无意义撑满页面。
+## 5.6 Source 依赖与来源标注
 
-图内部的视觉密度应接近原 PPT，不要把少量信息放进巨大卡片。
+课程原始材料和外部材料都需要可追溯：
+
+- 当前课程 source file 被 Markdown 直接引用时，必须随 Delivery 打包；
+- 外部图必须在正文相邻位置标明来源和“External Supplement”；
+- 外部来源 URL / 书名 / 章节应足够让下一位 Agent 或用户重新定位；
+- 不把外部图伪装成教师课件原图。
+
+图片文件名应继续保持课程内唯一、可读、可追溯。
 
 ---
 
 # 6. 静态 SVG 规范
 
-## 6.1 总风格
+SVG 是 **Level 3 fallback**，不是原图裁切失败后的默认第一选择。它的目标是补足低风险视觉表达，不是替换已有的可靠技术图。
 
-SVG 不是另起一套视觉设计，而是**补齐原课件视觉语言**。
+## 6.1 允许使用 SVG 的条件
 
-如果课件有稳定风格，SVG 应继承：
+只有同时满足以下条件时才使用：
 
-- 主色；
-- accent color；
-- neutral background；
-- 圆角程度；
-- 线条粗细；
-- 字号层级；
-- 箭头形态；
-- node 的视觉重量。
+- Level 1 原课程视觉无法安全使用，或原材料本身没有图；
+- Level 2 没有找到语义一致、来源可信且适合使用的外部图；
+- 图的结构足够简单，Agent 可以逐项验证；
+- 重绘不会因为一个方向、极性、坐标或符号错误而改变知识结论。
 
-例如 CSI201 的课件是浅背景、深蓝文本、青色与橙色 accent，则补充 SVG 也保持这一风格，不突然变成霓虹、渐变、玻璃、像素风。
+如果不能逐项验证，停止生成，进入 Level 4。
 
-如果原课件没有明显风格，则使用中性课程默认：
+## 6.2 总风格
 
-- 背景：透明或极浅 neutral；
-- node：浅色填充 + 细边；
-- 文本：深灰/深蓝；
-- 主流程：单一主色；
-- 仅一个 accent 用于关键节点；
-- 禁止阴影堆叠、复杂渐变、拟物效果。
+SVG 不是另起一套视觉设计，而是尽量继承当前课程已有视觉语言：主色、accent、neutral background、线条粗细、字号层级和箭头形态。如果课件没有稳定风格，使用中性课程默认：透明或极浅背景、深灰/深蓝文字、单一主色、最多一个 accent。
 
-## 6.2 SVG 布局
+禁止为了“高级感”加入霓虹、复杂渐变、玻璃、拟物、过度阴影或大面积装饰。
 
-优先 **横向（left-to-right）**。课程流程通常更适合人的阅读方向，也减少 Obsidian 中向下占屏。
+## 6.3 布局与文字
 
-只有以下情况用纵向：
-- 因果层级本身强烈从上到下；
-- 横向会造成严重拥挤；
-- 原课件本来就是纵向结构。
+优先横向（left-to-right），只有因果层级天然从上到下或横向严重拥挤时使用纵向。
 
-SVG 必须放在一个紧凑画布中，内容居中，不贴左侧，不留巨大空白。节点之间有稳定间距，箭头不能穿过文字。
+SVG 必须：
 
-## 6.3 SVG 文字
-
-- 字体使用系统无衬线栈，不嵌入字体文件；
-- 不用过小字体；
+- 紧凑居中，不贴边；
+- 节点间距稳定，箭头不穿过文字；
+- 使用系统无衬线字体，不嵌入字体文件；
 - 一张图最多 2–3 个字号层级；
-- node 文字尽量 1–2 行；
 - 长解释留在正文，不塞进图。
 
-## 6.4 SVG 禁止项
+## 6.4 技术正确性 Gate
 
-禁止：
-- 默认动画；
-- moving packet / blinking node / loop animation；
-- hover 才显示核心信息；
-- 复杂 filter 导致 Obsidian 兼容问题；
-- `foreignObject` 作为必要依赖；
-- 过度圆角卡片化；
-- 颜色数量失控；
-- 与 PPT 风格完全不同的“重新设计”。
+SVG 输出后必须和 source / 公式逐项核对：
+
+- node 是否缺失；
+- arrow direction 是否正确；
+- polarity / sign / symbol 是否一致；
+- label 是否有拼写、下标或单位错误；
+- 是否存在 Agent 自行补出的未经 source 支持的信息。
+
+任何一项无法验证，SVG 不得进入正式笔记。
+
+## 6.5 禁止项
+
+禁止：默认动画、moving packet、blinking node、hover 才显示核心信息、复杂 filter、必要依赖 `foreignObject`、过度圆角卡片化、颜色失控，以及用 SVG 重绘高风险技术图来掩盖原图提取失败。
 
 ---
 
@@ -491,9 +522,9 @@ Mermaid 不是默认视觉方案。它适合**简单、结构性强、无需精�
 
 优先级：
 
-`在确实需要视觉表达时：原课件裁图 > 原 PDF 页面 > 静态 SVG > 紧凑表格 / inline flow > Mermaid`
+`在确实需要视觉表达时：当前课程原图 / 同源 PDF > 可信外部原图 > 低风险静态 SVG > 紧凑表格 / inline flow > Mermaid > Manual Capture Required`
 
-对于课程核心机制、网络拓扑、电路、协议 sequence，如果视觉质量重要，优先静态 SVG 或原图。
+对于课程核心机制、网络拓扑、电路、协议 sequence，优先使用可验证的课程原图或官方/教材原图；SVG 只用于低风险且可逐项验证的结构。
 
 使用 Mermaid 时：
 
@@ -635,15 +666,18 @@ $1.5\times10^{10}\,\text{cm}^{-3}$
 
 并且可读，优先裁原图。不要为了统一风格重新画，因为坐标、刻度、注释本身就是知识来源。
 
-## 10.2 重绘曲线
+## 10.2 外部曲线与重绘
 
-只有原图不可读或需要把公式关系重新可视化时才重绘。重绘必须：
+原课程曲线不可安全使用时，先进入 Level 2，优先寻找教材、大学课程、厂商或官方资料中的语义等价曲线。只有找不到可靠外部图、且曲线能由明确公式或 source 数据逐项验证时，才允许重绘。
+
+重绘必须：
 
 - 保持数据 / 公式真实；
 - 明确标注为“reconstructed / schematic”；
 - 不伪造原课件数据点；
 - 使用静态 SVG 或高清 PNG；
 - 坐标轴、单位、legend 完整；
+- 对照公式/source 验证趋势、拐点和方向；
 - 风格尽量贴近课件。
 
 ---
@@ -706,7 +740,7 @@ Client connected
 
 不逐行解释显然的语法。
 
-如果代码涉及重要状态流，可以配静态 SVG：
+如果代码涉及重要状态流且没有可靠 source figure，可以配低风险静态 SVG：
 
 `Client socket → TCP connection → Server socket`
 
@@ -723,9 +757,10 @@ choose output interface
 forward packet
 ```
 
-如果过程含分支 / loop / multiple states，使用：
-- 原课件图；
-- 静态 SVG；
+如果过程含分支 / loop / multiple states，按顺序使用：
+- 当前课程原图 / 官方资料图；
+- 可信外部教材或技术图；
+- 可逐项验证的低风险静态 SVG；
 - 简单 Mermaid。
 
 状态机应明确：
@@ -797,7 +832,7 @@ Callout 只用于：
 ```text
 2–3 段解释
 ↓
-1 张原课件裁图 / SVG
+1 张经过 QA 的原课程图 / 可信外部图 / 低风险 SVG
 ↓
 1–2 段解释图中的关系
 ↓
@@ -834,9 +869,9 @@ callout
 ## 16.1 网络 / CS
 
 优先：
-- topology screenshot；
+- verified topology source figure；
 - protocol sequence；
-- static flow SVG；
+- verified source figure / low-risk static flow SVG；
 - code blocks；
 - comparison tables；
 - packet / state diagrams。
@@ -851,7 +886,7 @@ callout
 - I–V / waveform；
 - formula + derivation；
 - model comparison table；
-- bias / signal flow static SVG。
+- verified source figure / low-risk bias-flow SVG。
 
 普通电场方向、PN 区方向等使用 Markdown 文本，不用 LaTeX 画文字。
 
@@ -863,7 +898,7 @@ callout
 - function plot；
 - waveform；
 - transformation table；
-- source graph crop。
+- verified source graph crop。
 
 不要把所有公式都做成截图。
 
@@ -873,7 +908,7 @@ callout
 - runnable code；
 - terminal commands；
 - output；
-- architecture / data-flow SVG；
+- verified source figure / low-risk architecture SVG；
 - screenshot only when UI state matters。
 
 ## 16.5 概念 / 理论课程
@@ -904,12 +939,20 @@ callout
 - [ ] 是否有重复总结和 AI 主持语？
 - [ ] 重点是否来自内容本身，而不是符号和高亮？
 
-### Visual
-- [ ] 原 PPT 有好图时是否优先使用？
-- [ ] 截图是否裁掉无意义 slide 外壳与大白边？
-- [ ] SVG 是否静态、紧凑、风格贴近课件？
-- [ ] 是否为了“丰富”而加入无用图？
-- [ ] 表格 / 图 / 公式是否真的比 prose 更合适？
+### Visual Source
+- [ ] 是否先判断“这里真的需要图”再进入视觉流程？
+- [ ] 有课程原图时是否优先使用 Level 1？
+- [ ] Level 1 两次仍无法安全提取时，是否停止硬裁并升级 Level 2？
+- [ ] 外部图是否完成来源记录和 semantic equivalence check？
+- [ ] SVG 是否仅用于低风险、可逐项验证的图？
+
+### Visual Asset QA
+- [ ] 每张被 Markdown 实际引用的图是否单独审查？
+- [ ] 公式、坐标、刻度、单位、legend、caption、panel、箭头、极性是否完整？
+- [ ] 是否存在断字、断线、半截文字、半个 panel、黑边或无关残片？
+- [ ] 四边是否有合理安全留白？
+- [ ] 图片显示尺寸是否按信息密度自适应，而不是统一宽度？
+- [ ] multi-panel / paired figure 是否保持完整比较关系？
 
 ### Markdown
 - [ ] 相对路径是否全部有效？
@@ -920,8 +963,10 @@ callout
 
 ### Delivery
 - [ ] `.md + assets + sources` 是否自包含？
+- [ ] 外部 visual source 是否有可追溯引用？
 - [ ] ZIP 解压后是否能直接放入 Vault？
 - [ ] 是否避免修改 `.obsidian/`？
+- [ ] 是否完成 final visual contact-sheet / per-asset audit？
 
 ---
 
@@ -931,14 +976,17 @@ callout
 
 1. **完整读取材料**：先理解整讲结构，不边读边机械输出。
 2. **Source Map**：识别主知识链、公式、例题、好图、必须保留的图表、可删除行政页。
-3. **Visual Triage**：对每张候选图判断 `原图裁剪 / PDF page / 静态 SVG / 表格 / 不需要视觉`。
-4. **Knowledge Rewrite**：按理解顺序写正文，不按 slide 顺序抄。
-5. **Insert Media**：图、表、公式、代码只放在第一次真正需要它的位置。
-6. **Density Pass**：删除碎行、重复总结和大段无停顿文字，使密度落在中间区间。
-7. **Style Pass**：清理 ChatGPT 主持语、过度粗体、无意义符号。
-8. **Technical Validation**：检查相对路径、SVG、图片、MathJax、Mermaid、code fences。
-9. **Package**：输出 Week/Unit ZIP；Markdown 可额外作为预览。
-10. **Do Not Drift**：后续 Lecture 默认继承本 standard；没有用户确认，不自行改变视觉或结构规范。
+3. **Visual Need Decision**：先判断哪些位置真的需要视觉；不因为某节“没图”而强行加图。
+4. **Level 1 Extraction**：优先从当前课程原材料高分辨率提取；识别 semantic envelope，再决定 tight / wide / page embed。
+5. **Per-asset QA**：每张 crop 立刻检查完整性、正确性、边界和清洁度。最多两次合理 recrop；仍失败则停止硬裁。
+6. **Escalation**：按 `可信外部原图 → 低风险 SVG → Manual Capture Required` 逐级处理，并完成来源/语义一致性验证。
+7. **Knowledge Rewrite**：按理解顺序写正文，不按 slide 顺序抄。
+8. **Insert Media**：视觉、表格、公式、代码只放在第一次真正需要的位置；显示尺寸按信息密度自适应。
+9. **Density + Style Pass**：删除碎行、重复总结、主持语、过度粗体与装饰 block。
+10. **Technical Validation**：检查相对路径、图片、SVG、MathJax、Mermaid、code fences 与 source dependencies。
+11. **Pre-delivery Visual Audit**：汇总 Markdown 实际引用资产，逐张打开或生成 contact sheet，全部重新过 Gate。
+12. **Package**：更新 `COURSE_STATE.yaml`，输出 Week/Unit ZIP；Markdown 可额外作为预览。
+13. **Do Not Drift**：后续 Lecture 默认继承本 standard；没有用户确认，不自行改变视觉或结构规范。
 
 ---
 
@@ -951,10 +999,14 @@ callout
 - 一个完整思想尽量写完整自然段，不做 bullet dump。
 - 密度保持中等：比纯教材稍紧，但不能满屏连续文字。
 - 该用表格、图、公式、代码时使用，不追求“全是 prose”。
-- **原课件好图优先于任何生成图。**
-- 截图优先裁取有效图形区域，不把整张 PPT 大白边塞进笔记。
-- 只有原图不适合时才生成 **静态 SVG**。
-- SVG 风格继承 PPT；不另造明显不同的视觉语言。
+- **原课程材料中的可靠视觉永远是第一优先级。**
+- 截图先识别 semantic envelope，再裁；不允许断公式、断坐标、断 caption、断 panel。
+- 同一原图最多进行两次合理 recrop；仍无法同时做到完整和干净时，自动升级，不继续猜坐标。
+- **视觉 fallback 固定为：课程原图 / 同源 PDF → 可信教材或官方外部原图 → 低风险静态 SVG → Manual Capture Required。**
+- 外部图必须标注来源并完成 semantic equivalence check，不把外部图伪装成老师课件。
+- SVG 只承担低风险、结构明确、可逐项验证的图；高风险方向、极性、器件内部机制和复杂曲线默认不自行重绘。
+- 每张视觉资产进入 Markdown 前都必须单独 QA；正式 ZIP 前还必须做一次全资产 visual audit。
+- 图片尺寸按信息密度与 aspect ratio 自适应，不统一宽度。
 - **课程笔记默认不使用 SVG 动画。**
 - Mermaid 不是核心视觉默认方案。
 - 公式只承载数学，普通方向/状态/英文术语不用 LaTeX 装饰。
@@ -976,7 +1028,7 @@ callout
 
 [连续正文解释现象、原因和机制。]
 
-![必要时使用原课件裁图](assets/LXX-pXX-topic.png)
+![优先使用已通过 QA 的课程原图；失败时按视觉来源层级升级](assets/LXX-pXX-topic.png)
 
 [解释图中真正重要的关系。]
 
@@ -1006,7 +1058,7 @@ $$
 [程序输出 / 伪代码 / 日志]
 ```
 
-![原图不足时才使用静态 SVG](assets/LXX-mechanism.svg)
+<!-- 视觉按 Level 1 → Level 2 → Level 3 → Level 4 处理；不要为了填模板强行生成图。 -->
 
 ## 三、Integrated Understanding
 
@@ -1072,7 +1124,7 @@ COURSE_CODE_WeekXX_Delivery.zip
 ```yaml
 schema: obsidian-course-state/v1
 course_code: COURSE_CODE
-standard_version: "2.2"
+standard_version: "3.0"
 status: active
 
 structure:
@@ -1175,7 +1227,7 @@ Gold Reference 的地位低于 Global Standard，但高于 Agent 自己的写作
 
 **Course-specific**：只影响某一门课，例如某课程要求每章保留公式索引。写进 `course_overrides`，不升级 Global Standard。
 
-**Global**：未来所有课程都应该遵守，例如“SVG 默认静态”“PPT 好图优先裁图”。更新本 Standard，版本号从 `2.2 → 2.3`。
+**Global**：未来所有课程都应该遵守，例如“SVG 默认静态”“PPT 好图优先裁图”。更新本 Standard，版本号按语义版本推进；本次 Visual Extraction / QA Pipeline 属于跨课程执行模型变化，因此升级为 `3.0`。后续兼容性小改使用 `3.x`。
 
 Standard 升级后，不自动重写过去所有 Week。旧笔记只有用户明确要求时才迁移。
 
@@ -1186,7 +1238,9 @@ Standard 升级后，不自动重写过去所有 Week。旧笔记只有用户明
 ```text
 Source completeness
 → Knowledge rewrite complete
-→ Visual triage complete
+→ Visual source hierarchy resolved
+→ Per-asset Visual QA passed
+→ Final visual audit passed
 → Relative links valid
 → Formula / code syntax valid
 → No animation unless explicitly requested

@@ -6,9 +6,11 @@
 
 [正文承担第一次教学：现象 → 原因 → 机制 → 结果。一个完整思想通常 3–6 句，不拆成短行。]
 
-![原课件存在高价值图时，优先使用高分辨率裁图](assets/LXX-pXX-topic.png)
+<!-- 视觉确有必要时：Level 1 课程原图/同源 PDF → Level 2 可信外部原图 → Level 3 低风险 SVG → Level 4 Manual Capture Required。最终资产必须先通过 Visual QA Gate。 -->
 
-[解释图中最关键的关系；不要简单写“如图所示”。]
+<img src="assets/LXX-pXX-topic.png" alt="descriptive alt text" width="520">
+
+[宽度按信息密度和 aspect ratio 调整；不要机械统一。解释图中最关键的关系，不要简单写“如图所示”。]
 
 ### 1. Sub-mechanism
 
@@ -46,9 +48,7 @@ $$
 
 ## 四、Mechanism / Flow（按需）
 
-[有课件好图则裁图；无合适原图但图明显更清楚时，生成静态 SVG。]
-
-![Static diagram](assets/LXX-mechanism.svg)
+[优先使用已经通过 QA 的课程原图或可信外部图。只有低风险、可逐项验证的简单结构才使用 SVG。]
 
 ## 五、Code / Algorithm（按需）
 
