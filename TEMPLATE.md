@@ -8,7 +8,9 @@
 
 <!-- 视觉确有必要时：Level 1 课程原图/同源 PDF → Level 2 可信外部原图 → Level 3 低风险 SVG → Level 4 Manual Capture Required。最终资产必须先通过 Visual QA Gate。 -->
 
-<img src="assets/LXX-pXX-topic.png" alt="descriptive alt text" width="520">
+<!-- 资源命名：{SrcID}-p{NN}-{slug}.{ext}，如 L01-p15-bandgap.png；自制 SVG 省略 p 段，如 L01-store-and-forward.svg。页码必须是真实原件页码，不用占位值。 -->
+
+<img src="assets/L01-p15-topic.png" alt="descriptive alt text" width="520">
 
 [宽度按信息密度和 aspect ratio 调整；不要机械统一。解释图中最关键的关系，不要简单写“如图所示”。]
 

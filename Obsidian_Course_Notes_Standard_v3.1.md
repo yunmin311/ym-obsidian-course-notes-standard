@@ -1,9 +1,10 @@
-# Obsidian Course Notes Standard v3.0
+# Obsidian Course Notes Standard v3.1
 
 > **Canonical Standard**  
 > 适用于所有 Lecture / Tutorial / Reading / Lab / Coding 类课程笔记。  
 > 目标不是“总结课件”，而是把原始教学材料重构为 **可长期维护、可复习、可追溯、视觉统一、直接放入 Obsidian 的高质量课程讲义**。  
-> 全局 Standard 只定义跨课程共用规则；具体课程的正文密度与视觉基线由该课程 `COURSE_STATE.yaml → gold_reference` 决定。
+> 全局 Standard 只定义跨课程共用规则；具体课程的正文密度与视觉基线由该课程 `COURSE_STATE.yaml → gold_reference` 决定。  
+> **本版（3.1）相对上一版的唯一实质性变更**：把交付结构与文件命名从“示例性描述”升级为 **可机械校验的硬约束**（第 2 节重写），使命名体系既能适配 Week 以外的课程组织方式，又不会随课程漂移。视觉与写作规则未变。
 
 ---
 
@@ -60,75 +61,263 @@ Lecture 1 常见的教师邮箱、TA、课程安排、办公室联系方式、�
 
 # 2. 文件与交付结构
 
+本节是**硬约束**，不是建议。第 2.4 与 2.7 节的命名规则必须能机械校验，因此每条规则都给出明确判定条件。
+
 ## 2.1 课程根目录
 
-推荐结构：
-
 ```text
-COURSE_CODE/
-├─ README.md
-├─ COURSE_STATE.yaml
-├─ NOTE_STYLE_SPEC.md        # optional，仅记录课程特有 overrides
-├─ Week01/
-│  ├─ Lecture 01 - Topic.md
-│  ├─ Tutorial 01 - Topic.md
-│  ├─ Lab 01 - Topic.md
-│  ├─ assets/
-│  │  ├─ L01-p34-campus-access.png
-│  │  ├─ L01-store-forward.svg
-│  │  └─ T01-p08-example.png
-│  └─ sources/
-│     ├─ Lecture01.pdf
-│     └─ Tutorial01.pdf
-├─ Week02/
-│  └─ ...
-└─ ...
+COURSE_CODE/                          # 目录名 = course_code，全大写
+├─ COURSE_STATE.yaml                  # [必需]
+├─ README.md                          # [延后] 见 2.2
+├─ NOTE_STYLE_SPEC.md                 # [可选] 仅课程特例
+├─ Unit01/                            # [必需] 至少一个；前缀由 unit_scheme 决定
+│  ├─ Lecture 01 - Topic.md           # [必需] 至少一个
+│  ├─ Tutorial 01 - Topic.md          # [条件] 该单元有 tutorial 时必需
+│  ├─ Lab 01 - Topic.md               # [条件] 该单元有 lab 时必需
+│  ├─ assets/                         # [条件必需] 见 2.5
+│  └─ sources/                        # [强制] 见 2.6
+└─ Unit02/
+   └─ ...
 ```
 
-如果课程不按 Week 组织，可将 `Week01` 替换为 `Unit01` / `Lecture01`，但**同一课程一旦选择后不得混用**。
+**必需项判定**：
 
-每个 Unit / Week 必须自包含：移动整个目录后，Markdown、assets、sources 仍然有效。
+| 项 | 必需性 | 判定 |
+|---|---|---|
+| 课程根目录名 | 必需 | 必须等于 `COURSE_STATE.yaml → course_code` |
+| `COURSE_STATE.yaml` | 必需 | 必须在课程根，**文件名不可更改** |
+| 单元目录 | 必需 | 至少一个；命名见 2.4 |
+| 单元内 `.md` | 必需 | 每个单元至少一个；命名见 2.4 |
+| `assets/` | 条件必需 | 该单元任一 `.md` 引用了图片 / SVG 时必须存在 |
+| `sources/` | **强制** | 无条件必需，见 2.6 |
+| `README.md` | 延后 | 见 2.2 |
+| `NOTE_STYLE_SPEC.md` | 可选 | 仅当存在 `course_overrides` 时 |
 
-`COURSE_STATE.yaml` 是课程根目录的必需文件；`NOTE_STYLE_SPEC.md` 仅在该课程存在全局 Standard 之外的课程特例时创建。Global Standard 本身不需要复制进每门课程目录，只要当前项目/工作环境能够稳定访问 canonical standard 即可。
+每个单元必须自包含：**单独移动整个单元目录后，Markdown、assets、sources 仍然全部有效。**
 
 不得创建、覆盖或修改 `.obsidian/`。
-**Source dependency hard rule：**如果任何已交付 Markdown 引用了 `sources/` 下的文件，该被引用的 source file 必须包含在同一个 Delivery ZIP 中。只有当所有已交付笔记都不依赖 `sources/` 时，`sources/` 才可以省略。
 
+## 2.2 课程 README 的生成时机（延后）
 
-## 2.2 正式交付
+`README.md` 是课程交付的一部分，但**不在单元增量交付中生成**。
 
-新增一周/单元时，正式交付统一命名为：
+规则：
 
-- Week 制：`COURSE_CODE_WeekXX_Delivery.zip`
-- Unit 制：`COURSE_CODE_UnitXX_Delivery.zip`
+- 单元交付不含 `README.md`；不要为了“结构完整”提前造一个空壳 README。
+- 当该课程**所有计划内容全部写完**（课程结束或用户明确宣告完结）后，才单独生成一次课程 `README.md`。
+- 该 README 描述整门课的最终状态，因此必须基于全部已 accepted 的内容来写，而不是基于某一个单元。
+- 在课程未完结期间，缺少 `README.md` **不构成结构缺陷**，不得被校验器判为 FAIL。
+
+## 2.3 交付包命名
+
+```text
+COURSE_CODE_Unit{NN}_Delivery.zip
+```
+
+`Unit{NN}` 中的 `Unit` 为占位符，实际使用由 `unit_scheme` 决定的单元前缀（见 2.4）。
+
+示例：
+
+```text
+CSI201_Week02_Delivery.zip
+SOE205_Module03_Delivery.zip
+EEE211_Lecture05_Delivery.zip
+```
 
 用户只需要：
 
 `下载 → 解压 → 整个文件夹内容放进课程根目录`
 
-单独 `.md` 可以额外提供预览，但不能作为唯一正式交付，因为它可能失去图片和 sources。
+单独 `.md` 可以额外提供预览，但不能作为唯一正式交付，因为它会失去图片和 sources。
 
-## 2.3 文件命名
+## 2.4 单元目录与文件命名（四段派生模型）
 
-Markdown：
-
-```text
-Lecture 01 - Introduction to the Modern Internet.md
-Tutorial 01 - Diode Analysis.md
-Lab 03 - Socket Programming.md
-```
-
-图片 / SVG：
+整套命名只有**一个变量**：`COURSE_STATE.yaml → structure.unit_scheme`。其余三段全部从笔记文件名派生。
 
 ```text
-L01-p34-campus-access.png
-L01-p45-tunnel-hybrid.png
-L01-store-and-forward.svg
-T01-p08-load-line-example.png
-LAB03-client-server-flow.svg
+唯一变量                    派生段
+unit_scheme  ──▶  ① 单元目录名
+笔记文件名   ──▶  ② 笔记文件 / ③ 资源文件 / ④ 来源文件
 ```
 
-原则：**课程内唯一、可读、可追溯，不使用 UUID。**
+### 所谓“四段”
+
+| 段 | 模式 | 示例 |
+|---|---|---|
+| ① 单元目录 | `{UnitPrefix}{NN}` | `Week01` |
+| ② 笔记文件 | `{TypeLabel} {NN} - {Title}.md` | `Lecture 01 - Network Performance.md` |
+| ③ 资源文件 | `{SrcID}-p{NN}-{slug}.{ext}` | `L01-p15-bandgap.png` |
+| ④ 来源文件 | `{COURSE_CODE}_{SrcID}_{Slug}.{ext}` | `CSI201_L01_Network_Performance.pdf` |
+
+### ① 单元目录：唯一变量
+
+`unit_scheme` 取值是**封闭枚举**，不允许自由文本：
+
+| `unit_scheme` | 单元目录前缀 | 适用组织方式 |
+|---|---|---|
+| `week` | `Week` | 按教学周排课（当前四门课程） |
+| `lecture` | `Lecture` | 一讲一目录，无“周”概念 |
+| `module` | `Module` | 模块化课程 |
+| `chapter` | `Chapter` | 教材章节驱动 |
+| `unit` | `Unit` | 通用兜底 |
+| `custom` | 由 `structure.unit_prefix` 指定 | 仅在以上都不适用时使用 |
+
+规则：
+
+- 单元目录名 = `{UnitPrefix}` + **两位零填充序号**：`Week01`、`Module03`、`Chapter12`。
+- `custom` 必须同时设置 `structure.unit_prefix`，并在 `course_overrides` 中记录原因。
+- **同一课程内不得混用前缀。** 一旦该课程交付了第一个单元，`unit_scheme` 即被锁定；后续改变需要显式迁移，不允许悄悄换。
+- 不允许出现 `Week1` / `week01` / `WEEK01`：必须是大写开头前缀 + 两位数字。
+
+这样设计的理由：未来出现非 Week 课程时，只需在 `COURSE_STATE.yaml` 改一个枚举值，其余命名规则完全不动；同时因为枚举封闭，命名不会随不同 Agent 的措辞漂移。
+
+### ② 笔记文件
+
+```text
+{TypeLabel} {NN} - {Title}.md
+```
+
+**TypeLabel 枚举与 SrcID 派生表**（写死，不可扩展）：
+
+| TypeLabel | SrcID | 示例 |
+|---|---|---|
+| `Lecture` | `L` | `Lecture 03 - ...` → `L03-` |
+| `Tutorial` | `T` | `Tutorial 02 - ...` → `T02-` |
+| `Lab` | `LAB` | `Lab 01 - ...` → `LAB01-` |
+| `Recitation` | `R` | `Recitation 01 - ...` → `R01-` |
+
+**序号规则：`{NN}` 在整门课程内按类型连续递增，不是单元内递增。**
+
+```text
+Week01/Lecture 01 - ...md
+Week01/Lecture 02 - ...md      ← 同单元可以有两个 Lecture
+Week02/Lecture 03 - ...md      ← 跨单元继续数，不回到 01
+```
+
+`{NN}` 必须两位零填充。同一课程内，同一 TypeLabel 的序号不得重复。
+
+`{Title}` 使用课件原始标题的自然写法，保留大小写与专有名词，不用连字符替换空格。
+
+### ③ 资源文件（assets）
+
+```text
+{SrcID}-p{NN}-{slug}.{ext}
+```
+
+| 成分 | 含义 | 规则 |
+|---|---|---|
+| `{SrcID}` | 来源标识 | 由 ② 派生，如 `L01` / `T01` / `LAB03` |
+| `p{NN}` | 原件页码锚点 | **必填**，两位或三位零填充，如 `p08` / `p104` |
+| `{slug}` | 内容描述 | 小写英文，连字符分词，不用中文、不用空格、不用大写 |
+
+示例：
+
+```text
+L01-p15-bandgap.png
+L01-p22-pn-junction.png
+T01-p08-load-line.png
+LAB03-p04-client-server-flow.svg
+```
+
+规则：
+
+- `{SrcID}` 必须能在**同一单元**的笔记文件中找到对应来源；跨单元引用不被接受。
+- `p{NN}` 是**原件页码**，用于追溯该图来自哪一页。
+- 若同一页导出多张图，用 slug 区分，不重复序号：`L01-p15-bandgap.png` / `L01-p15-bandgap-detail.png`。
+- 禁止使用 UUID、哈希、`image1` / `figure2` / `截图` 之类无语义名。
+
+### 2.4.1 无法确定页码时的处理
+
+`p{NN}` 的语义是“**这一页**的原件”，因此**不接受占位值**。不要为了凑格式写 `p00`。
+
+| 情况 | 处理 |
+|---|---|
+| 有原件 PDF，图是原件截图 | 填真实页码 |
+| 有原件 PDF，但图跨页 / 无法定位单页 | 填该图**起始页** |
+| 图是自制 SVG（非原件截图） | 省略 `p` 段：`L01-store-and-forward.svg` |
+
+即：**页码段要么是真实页码，要么整体不出现；不允许出现无意义编号。**
+
+> 这一条是 v3.1 相对旧实践的收紧点。旧版曾出现 `L01-store-forward.svg` 这类省略页码的写法，现予以确认合法；但**顺序编号**（如 `01-campus-access-path.png`）不合法，因为它既不含来源标识也不含页码。
+
+### 2.4.2 迁移说明：顺序编号资源
+
+部分历史单元在 `sources/` 缺失时退化使用了顺序编号（`01-xxx.png`、`07-xxx.svg`）。这类文件不满足 ③ 的规则。
+
+处理原则：
+
+- **不强制立即重命名。** 缺少原件 PDF 时无法填出真实页码，强行改写只会产生假页码。
+- 在补齐 `sources/` 后**一次性**重命名，并同步更新笔记中的引用。
+- 在校验器中被判为 `WARN` 而非 `FAIL`，直到该单元补齐 `sources/`。
+
+## 2.5 assets 目录规则
+
+- `assets/` 只存该单元笔记实际引用的资源。
+- 不存放未使用的中间产物、原图副本、contact sheet、草稿版本。
+- 引用一律使用相对路径，且必须能从单元目录解析。
+- 禁止跨单元引用：需要复用图时，复制进目标单元的 `assets/`。
+
+## 2.6 sources 目录规则（强制）
+
+**`sources/` 无条件必需。** 只要该单元有笔记文件，就必须存在 `sources/`。
+
+理由：`sources/` 是笔记可追溯性的物理基础。③ 的 `p{NN}` 页码锚点只在原件存在时才有意义；没有原件，整个“可追溯”承诺就无法成立。
+
+命名（④ 段）：
+
+```text
+{COURSE_CODE}_{SrcID}_{Slug}.{ext}
+```
+
+示例：
+
+```text
+CSI201_L01_Network_Performance.pdf
+CSI201_L02_Protocol_Layers.pdf
+EEE211_L01_Semiconductor_Materials.pdf
+EEE211_T01_Diode_Circuit_Analysis.pdf
+```
+
+规则：
+
+- `{COURSE_CODE}` 与该课程根目录名一致。
+- `{SrcID}` 与 ③ 中的来源标识一致，两者构成 join 关系。
+- `{Slug}` 取自该笔记的 `{Title}`，下划线分词。
+- 保留原件扩展名；不要转码、不要重压缩。
+
+**Source dependency hard rule**：如果任何已交付 Markdown 引用了 `sources/` 下的文件，该文件必须包含在同一个 Delivery ZIP 中。反之，`sources/` 仍必须存在——其中可只放原件本身（原件通常不直接被 `.md` 引用，而是作为 ③ 的提取来源和页码依据）。
+
+## 2.7 结构校验规则
+
+以下规则应能由脚本机械判定，用于 CI 或交付前自检：
+
+| ID | 检查 | 判定 |
+|---|---|---|
+| U1 | 磁盘上每个单元目录去尾数字后的前缀，必须等于 `unit_scheme` 映射结果 | FAIL：前缀与声明不符 |
+| U2 | 同一课程内所有单元目录前缀必须一致 | FAIL：出现两种前缀 |
+| U3 | `COURSE_STATE.yaml` 的 `completed[].unit` 与 `next_expected.unit` 前缀必须同 U1 结果 | FAIL：状态与磁盘不一致 |
+| U4 | 单元序号必须两位零填充 | FAIL：`Week1` / `week01` |
+| N1 | 每个单元目录下必须存在 `.md` 文件 | FAIL：空单元 |
+| N2 | `{NN}` 在同一课程的同一 TypeLabel 内不得重复 | FAIL：编号冲突 |
+| A1 | `assets/` 下每个文件名必须匹配 `{SrcID}-(p\d{2,3}-)?{slug}\.{ext}` | WARN：顺序编号；FAIL：其他 |
+| A2 | `assets/` 中每个 `{SrcID}` 必须能在同单元 `.md` 文件名中找到来源 | FAIL：孤儿资源 |
+| A3 | `assets/` 不得存在未被任何 `.md` 引用的文件 | WARN：未使用资源 |
+| S1 | 每个单元目录必须存在 `sources/` | FAIL：缺失 |
+| S2 | `sources/` 内文件名必须匹配 `{COURSE_CODE}_{SrcID}_{Slug}\.{ext}` | WARN：不合规命名 |
+| S3 | `sources/` 中每个 `{SrcID}` 必须有对应的 `{TypeLabel} {NN}` 笔记文件 | FAIL：孤儿来源 |
+| R1 | 课程根 `README.md` 缺失 | **不检查**（见 2.2，延后生成） |
+| R2 | `COURSE_STATE.yaml` 必须存在于课程根且文件名精确 | FAIL：改名或缺失 |
+
+`WARN` 不阻断交付，但必须在交付说明中指出。
+
+规则的参考实现是 `scripts/check_course_structure.py`，用法：
+
+```bash
+python scripts/check_course_structure.py <course_dir>
+python scripts/check_course_structure.py --self-test   # 自检，CI 使用
+```
+
+该脚本不依赖第三方库，可直接对任意课程目录运行；`--self-test` 会构造夹具逐条验证每条规则**能够真的报错**（只报绿不报红的校验器比没有校验器更危险）。
 
 ---
 
@@ -961,6 +1150,18 @@ callout
 - [ ] code fence 是否有正确语言？
 - [ ] Mermaid 若存在是否可渲染？
 
+### Structure & Naming
+- [ ] 课程根目录名是否等于 `course_code`？
+- [ ] `COURSE_STATE.yaml` 是否存在且文件名未被改动？
+- [ ] 单元目录前缀是否与 `unit_scheme` 声明一致（U1 / U2）？
+- [ ] 单元序号是否两位零填充（U4）？
+- [ ] 笔记序号是否在课程内按 TypeLabel 连续且无重复（N2）？
+- [ ] `assets/` 文件名是否满足 `{SrcID}-(p{NN}-){slug}.{ext}`（A1）？
+- [ ] 每个 `{SrcID}` 是否都能在同单元找到对应笔记（A2）？
+- [ ] 是否存在未被引用的 `assets/` 文件（A3）？
+- [ ] `sources/` 是否存在，且符合 `{COURSE_CODE}_{SrcID}_{Slug}.{ext}`（S1 / S2 / S3）？
+- [ ] 是否错误地在单元交付中生成或判定了课程 `README.md`（R1）？
+
 ### Delivery
 - [ ] `.md + assets + sources` 是否自包含？
 - [ ] 外部 visual source 是否有可追溯引用？
@@ -1014,6 +1215,9 @@ callout
 - Callout 稀少使用，不做“黄框笔记”。
 - 最终交付必须能在 Obsidian 中独立工作并保持链接。
 - 一旦某课程的 standard 确认，后续默认复用，除非用户明确修改。
+- **交付结构与命名是硬约束**：`COURSE_STATE.yaml` 必需且文件名固定；单元目录前缀由 `unit_scheme` 唯一决定，同一课程不得混用；笔记序号在课程内按 TypeLabel 连续；资源文件一律 `{SrcID}-p{NN}-{slug}.{ext}`，页码必须是真实页码或整体省略，不用占位值；**`sources/` 无条件强制存在**。
+- **课程 `README.md` 延后生成**：单元交付不含 README；整门课内容写完后单独生成一次。
+- 课程结构一旦开始交付即视为锁定；改变 `unit_scheme` 属于显式迁移，不做静默切换。
 
 ---
 
@@ -1098,20 +1302,22 @@ $$
 
 ## 21.3 每周正式交付结构
 
-默认交付包：
+默认交付包（`Unit` 为占位符，实际前缀由 `unit_scheme` 决定，见 2.4）：
 
 ```text
-COURSE_CODE_WeekXX_Delivery.zip
+COURSE_CODE_Unit{NN}_Delivery.zip
 ├─ COURSE_STATE.yaml
-└─ WeekXX/
-   ├─ Lecture XX - Topic.md
-   ├─ Tutorial XX - Topic.md        # 有则生成
-   ├─ Lab XX - Topic.md             # 有则生成
-   ├─ assets/
-   └─ sources/                      # 被笔记引用时必须包含；否则按需生成
+└─ Unit{NN}/
+   ├─ Lecture {NN} - Topic.md
+   ├─ Tutorial {NN} - Topic.md      # 有则生成
+   ├─ Lab {NN} - Topic.md           # 有则生成
+   ├─ assets/                       # 被引用时必需
+   └─ sources/                      # 强制必需（2.6）
 ```
 
-用户将 ZIP **直接解压到课程根目录**。新的 `COURSE_STATE.yaml` 覆盖旧版本，`WeekXX/` 作为新增目录进入课程。
+**单元交付包中不包含课程 `README.md`**（见 2.2）；也不包含 `NOTE_STYLE_SPEC.md`。
+
+用户将 ZIP **直接解压到课程根目录**。新的 `COURSE_STATE.yaml` 覆盖旧版本，`Unit{NN}/` 作为新增目录进入课程。
 
 因此用户每周不需要逐张处理图片，也不需要手动合并 Markdown。
 
@@ -1124,11 +1330,12 @@ COURSE_CODE_WeekXX_Delivery.zip
 ```yaml
 schema: obsidian-course-state/v1
 course_code: COURSE_CODE
-standard_version: "3.0"
+standard_version: "3.1"
 status: active
 
 structure:
-  unit_scheme: week
+  unit_scheme: week          # week | lecture | module | chapter | unit | custom
+  unit_prefix: ""            # 仅 unit_scheme: custom 时填写
   current_unit: 1
 
 gold_reference:
@@ -1154,6 +1361,8 @@ last_delivery:
   date: "YYYY-MM-DD"
 ```
 
+`unit_scheme` 是交付结构与命名体系的**唯一变量**（见 2.4）：它决定单元目录前缀，也决定 `completed[].unit` / `next_expected.unit` / `last_delivery.package` 的写法。该字段一旦某课程开始交付即锁定。
+
 更新规则：
 - 新 Week/Unit 首次交付：`ADD completed` 中对应 unit，unit 与新 artifact 初始状态为 `draft`；更新 `current_unit / next_expected / last_delivery`。
 - 同一 Week 同时存在 Lecture / Tutorial / Lab 时，每个 artifact 独立记录状态；只有该 unit 当前要求的 artifacts 全部 accepted 后，unit 才标为 `accepted`。
@@ -1165,7 +1374,7 @@ last_delivery:
 
 如果仍在原对话，用户只需要上传新材料并说：
 
-> 按已确认 Standard 和当前 Course State 继续处理 WeekXX。只生成本周新增内容，输出 WeekXX Delivery ZIP，并更新 COURSE_STATE.yaml；不要重发旧周。
+> 按已确认 Standard 和当前 Course State 继续处理下一个 Unit（按其 `unit_scheme` 对应的前缀，如 Week03）。只生成新增内容，输出该 Unit 的 Delivery ZIP，并更新 COURSE_STATE.yaml；不要重发旧单元。
 
 Agent 应直接继续，不要求用户重新解释视觉规则、公式规则或打包方式。
 
@@ -1241,12 +1450,14 @@ Source completeness
 → Visual source hierarchy resolved
 → Per-asset Visual QA passed
 → Final visual audit passed
+→ Structure & naming rules pass (2.7: U1-U4, N1-N2, A1-A3, S1-S3)
+→ `sources/` present for every unit
 → Relative links valid
 → Formula / code syntax valid
 → No animation unless explicitly requested
 → No administrative noise unless requested
 → COURSE_STATE.yaml updated
-→ WeekXX Delivery ZIP built
+→ Unit Delivery ZIP built
 ```
 
 如果任何一项失败，不应把该 Week 标记为 accepted。
@@ -1265,14 +1476,15 @@ Source completeness
 ```text
 COURSE_CODE_Full_Bundle_YYYY-MM-DD.zip
 ├─ COURSE_STATE.yaml
-├─ README.md
-├─ Week01/
-├─ Week02/
+├─ README.md                       # 课程完结时才有，见 2.2
+├─ Unit01/
+├─ Unit02/
 ├─ ...
-└─ WeekXX/
+└─ Unit{NN}/
 ```
 
 这只是阶段性快照，不取代每周增量 Delivery。
 
+---
 
 **本文件是全局课程笔记的唯一 Canonical Standard。课程级 `NOTE_STYLE_SPEC.md` / `course_overrides` 只能增加课程特有要求，不能静默覆盖本 Standard 的硬规则；Global Standard 无需复制进每门课程目录。**

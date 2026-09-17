@@ -28,6 +28,28 @@ REQUIRED_STANDARD_MARKERS = [
     "Pre-delivery Visual Audit",
 ]
 
+# v3.1 replaced the descriptive delivery-structure section with hard, mechanically
+# checkable naming rules. These markers prove the section is present and complete;
+# without them a future edit could quietly drop the unit_scheme enum or the
+# sources/ mandate while every other gate still passes.
+REQUIRED_STRUCTURE_MARKERS = [
+    "四段派生模型",
+    "unit_scheme",
+    "TypeLabel 枚举与 SrcID 派生表",
+    "sources 目录规则（强制）",
+    "无法确定页码时的处理",
+    "结构校验规则",
+]
+
+# The closed unit_scheme enum -> directory prefix map (standard 2.4).
+UNIT_SCHEME_PREFIX = {
+    "week": "Week",
+    "lecture": "Lecture",
+    "module": "Module",
+    "chapter": "Chapter",
+    "unit": "Unit",
+}
+
 # Tokens that unambiguously mean "the standard's version".
 #
 # Deliberately NOT a bare `\d+\.\d+` scan: active files legitimately mention
@@ -80,6 +102,20 @@ def validate(root: Path) -> list[str]:
         missing = [marker for marker in REQUIRED_STANDARD_MARKERS if marker not in canonical_text]
         if missing:
             errors.append("canonical standard missing v3 visual markers: " + "; ".join(missing))
+        missing_structure = [
+            marker for marker in REQUIRED_STRUCTURE_MARKERS if marker not in canonical_text
+        ]
+        if missing_structure:
+            errors.append(
+                "canonical standard missing v3.1 structure markers: "
+                + "; ".join(missing_structure)
+            )
+        # The unit_scheme enum is the single variable of the naming system; if it
+        # drifts out of the closed set the whole delivery-structure contract
+        # becomes unverifiable, so pin every legal value explicitly.
+        for scheme in list(UNIT_SCHEME_PREFIX) + ["custom"]:
+            if f"`{scheme}`" not in canonical_text:
+                errors.append(f"canonical standard does not define unit_scheme `{scheme}`")
 
     stale_canonicals = [
         path
@@ -104,6 +140,11 @@ def validate(root: Path) -> list[str]:
         text = state.read_text(encoding="utf-8")
         if f'standard_version: "{short}"' not in text:
             errors.append(f"COURSE_STATE_TEMPLATE.yaml must use standard_version {short}")
+        # `unit_scheme` is the only variable of the naming system, so the template
+        # must always expose it; `unit_prefix` only matters for the custom scheme.
+        for key in ("unit_scheme:", "unit_prefix:"):
+            if key not in text:
+                errors.append(f"COURSE_STATE_TEMPLATE.yaml must declare {key}")
     else:
         errors.append("COURSE_STATE_TEMPLATE.yaml is missing")
 

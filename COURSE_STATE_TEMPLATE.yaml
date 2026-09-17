@@ -1,11 +1,17 @@
 schema: obsidian-course-state/v1
 course_code: COURSE_CODE
 course_name: ""
-standard_version: "3.0"
+standard_version: "3.1"
 status: active
 
 structure:
+  # unit_scheme is the ONLY variable in the delivery naming system (standard 2.4).
+  # It decides the unit-directory prefix; every other naming segment derives from it.
+  # Closed enum: week | lecture | module | chapter | unit | custom
+  # Locked once the course has delivered its first unit.
   unit_scheme: week
+  # Only used when unit_scheme is `custom`. Record the reason in course_overrides.
+  unit_prefix: ""
   current_unit: 0
 
 gold_reference:
