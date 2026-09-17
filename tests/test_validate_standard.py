@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.validate_standard import validate
+from scripts.validate_standard import REQUIRED_STRUCTURE_MARKERS, validate
 
 SKILL_MARKERS = "可信教材或官方外部原图\n最多两次合理 recrop\nVisual QA Gate\n"
 
@@ -30,6 +30,8 @@ class ValidateStandardTests(unittest.TestCase):
                     "最多两次合理裁切尝试",
                     "Adaptive sizing",
                     "Pre-delivery Visual Audit",
+                    *REQUIRED_STRUCTURE_MARKERS,
+                    "`week` `lecture` `module` `chapter` `unit` `custom`",
                 ]
             ),
             encoding="utf-8",
@@ -38,7 +40,8 @@ class ValidateStandardTests(unittest.TestCase):
             f"v{version}\n{canonical_name}\n", encoding="utf-8"
         )
         (root / "COURSE_STATE_TEMPLATE.yaml").write_text(
-            f'standard_version: "{short}"\n', encoding="utf-8"
+            f'standard_version: "{short}"\nunit_scheme: week\nunit_prefix: ""\n',
+            encoding="utf-8",
         )
         (root / "SKILL.md").write_text(SKILL_MARKERS, encoding="utf-8")
         for name in ["SOP_WEEKLY_CONTINUATION.md", "HANDOFF_PROMPTS.md", "TEMPLATE.md"]:
@@ -90,6 +93,51 @@ class ValidateStandardTests(unittest.TestCase):
         errors = validate(root)
         self.assertTrue(any("stale active version" in error for error in errors), errors)
         self.assertTrue(any("v3.0" in error for error in errors), errors)
+
+    def test_rejects_missing_structure_section_marker(self):
+        """v3.1 turned the delivery structure into a hard contract.
+
+        Dropping the naming-model section must fail even when every visual
+        marker is still intact.
+        """
+        root = self.make_repo()
+        canonical = root / "Obsidian_Course_Notes_Standard_v3.0.md"
+        canonical.write_text(
+            canonical.read_text(encoding="utf-8").replace("四段派生模型\n", ""),
+            encoding="utf-8",
+        )
+        errors = validate(root)
+        self.assertTrue(
+            any("missing v3.1 structure markers" in error for error in errors), errors
+        )
+
+    def test_rejects_incomplete_unit_scheme_enum(self):
+        """The closed unit_scheme enum is what keeps naming from drifting.
+
+        If a legal scheme disappears from the standard, a course organised that
+        way has no defined directory prefix and the naming contract is broken.
+        """
+        root = self.make_repo()
+        canonical = root / "Obsidian_Course_Notes_Standard_v3.0.md"
+        canonical.write_text(
+            canonical.read_text(encoding="utf-8").replace("`chapter`", "CHAPTER_GOES_HERE"),
+            encoding="utf-8",
+        )
+        errors = validate(root)
+        self.assertTrue(
+            any("does not define unit_scheme `chapter`" in error for error in errors), errors
+        )
+
+    def test_rejects_missing_unit_prefix_in_state_template(self):
+        """`unit_scheme`/`unit_prefix` are the only naming variables a course sets."""
+        root = self.make_repo()
+        (root / "COURSE_STATE_TEMPLATE.yaml").write_text(
+            'standard_version: "3.0"\nunit_scheme: week\n', encoding="utf-8"
+        )
+        errors = validate(root)
+        self.assertTrue(
+            any("must declare unit_prefix:" in error for error in errors), errors
+        )
 
 
 if __name__ == "__main__":

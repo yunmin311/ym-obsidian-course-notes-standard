@@ -25,14 +25,16 @@ Technical Validation + Final Visual Audit
       ↓
 Update COURSE_STATE.yaml
       ↓
-Build COURSE_CODE_WeekXX_Delivery.zip
+Structure & Naming Gate
+      ↓
+Build COURSE_CODE_UnitXX_Delivery.zip
 ```
 
 ## Same-chat continuation
 
 用户只需要上传本周材料并说：
 
-> 按当前 Standard 和 Course State 继续 WeekXX。只生成本周新增内容，输出 Delivery ZIP 并更新 COURSE_STATE.yaml，不重发旧周。
+> 按当前 Standard 和 Course State 继续下一个 Unit。只生成新增内容，输出该 Unit 的 Delivery ZIP 并更新 COURSE_STATE.yaml，不重发旧单元。
 
 Agent 不应重新询问已经固化的写作、视觉、公式、代码或目录规则。
 
@@ -61,22 +63,38 @@ Agent 不应重新询问已经固化的写作、视觉、公式、代码或目�
 
 ## Weekly / Unit Delivery ZIP
 
-Week 制：`COURSE_CODE_WeekXX_Delivery.zip`；Unit 制：`COURSE_CODE_UnitXX_Delivery.zip`。
+包名：`COURSE_CODE_Unit{NN}_Delivery.zip`（`Unit` 为占位符，实际使用 `unit_scheme` 对应的前缀：`week→Week`、`module→Module` 等）。
 
 ```text
 COURSE_CODE_Week02_Delivery.zip
 ├─ COURSE_STATE.yaml
 └─ Week02/
    ├─ Lecture 02 - ....md
-   ├─ assets/
-   └─ sources/
+   ├─ assets/                 # 命名 L02-p15-xxx.png
+   └─ sources/                # 强制存在，命名 CSI201_L02_Xxx.pdf
 ```
+
+**包内不含课程 `README.md`**——它延后到整门课内容写完时单独生成（standard 2.2）。课程根 `COURSE_STATE.yaml` 的 `unit_scheme` 决定前缀，交付前必须与磁盘上的目录名一致。
 
 直接解压到课程根目录，允许新的 `COURSE_STATE.yaml` 覆盖旧版本。不要把旧 Week/Unit 每次全部重新打包。
 
+## Structure & Naming Gate
+
+构建 ZIP 前逐项确认（standard 2.7）：
+
+- 单元目录前缀与 `COURSE_STATE.yaml → structure.unit_scheme` 一致（U1 / U2）；
+- 单元序号两位零填充（U4）；
+- 笔记序号在整门课程内按 TypeLabel 连续、无重复（N2）；
+- `assets/` 全部匹配 `{SrcID}-(p{NN}-){slug}.{ext}`，无顺序编号（A1）；
+- 每个 `{SrcID}` 都能在同单元找到笔记来源，无孤儿资源（A2）；
+- `assets/` 无未被引用的文件（A3）；
+- `sources/` 存在，命名合规，`{SrcID}` 有对应笔记（S1 / S2 / S3）。
+
+`WARN` 不阻断交付，但必须在交付说明中点出。
+
 ## Source dependencies
 
-Markdown 只要直接引用 `sources/` 中某个文件，该文件就必须进入同一个 Delivery ZIP。外部视觉必须有来源记录；许可不明确的受版权限制图片不要直接重新打包分发。
+`sources/` 无条件强制存在。Markdown 只要直接引用 `sources/` 中某个文件，该文件就必须进入同一个 Delivery ZIP。外部视觉必须有来源记录；许可不明确的受版权限制图片不要直接重新打包分发。
 
 ## Acceptance
 

@@ -29,6 +29,28 @@
 19. 删除 AI 主持语、重复总结、过度粗体、emoji、callout spam 和大量单句段落。
 20. 正式交付前验证 Markdown 引用、source dependencies、visual assets、MathJax、code fences 和 ZIP 自包含性。
 
+## 交付结构与命名（硬约束）
+
+`COURSE_STATE.yaml → structure.unit_scheme` 是整个命名体系的**唯一变量**，其余三段全靠派生：
+
+| 段 | 模式 |
+|---|---|
+| 单元目录 | `{UnitPrefix}{NN}`，前缀由 `unit_scheme` 决定：`week→Week`、`lecture→Lecture`、`module→Module`、`chapter→Chapter`、`unit→Unit`、`custom→unit_prefix` |
+| 笔记文件 | `{TypeLabel} {NN} - {Title}.md` |
+| 资源文件 | `{SrcID}-p{NN}-{slug}.{ext}` |
+| 来源文件 | `{COURSE_CODE}_{SrcID}_{Slug}.{ext}` |
+
+21. `unit_scheme` 一旦该课程交付了第一个单元即**锁定**；同类前缀不得混用，序号两位零填充（`Week01` 不是 `Week1`）。
+22. TypeLabel / SrcID 映射固定：`Lecture→L`、`Tutorial→T`、`Lab→LAB`、`Recitation→R`。
+23. 笔记序号 `{NN}` 在**整门课程内按类型连续递增**，不是单元内递增：Week01 有 Lecture 01 与 02，Week02 就从 Lecture 03 开始。同类型序号不得重复。
+24. 资源文件 `{SrcID}` 必须能在**同一单元**找到对应笔记；禁止跨单元引用资源。
+25. `p{NN}` 是**原件真实页码**，必填。要么填对，要么整体省略（自制 SVG 用 `L01-store-and-forward.svg`）——**不用 `p00` 或任何占位值**。
+26. 顺序编号（`01-campus-access-path.png`）不合规：既无来源标识也无页码。补齐 `sources/` 后一次性重命名并同步引用。
+27. **`sources/` 无条件强制存在**，命名为 `{COURSE_CODE}_{SrcID}_{Slug}.{ext}`；每个 `{SrcID}` 都要有对应笔记。
+28. **课程 `README.md` 延后**：单元交付不含 README，等整门课内容写完后单独生成一次。缺 README 不算缺陷。
+29. 交付包名 `COURSE_CODE_Unit{NN}_Delivery.zip`，包内只有 `COURSE_STATE.yaml` + 单元目录。`assets/` 只放被引用的文件，不放草稿与中间产物。
+30. 交付前对课程目录跑一次 `python scripts/check_course_structure.py <course_dir>`；任何 FAIL 必须修掉，`WARN` 必须在交付说明中列出。
+
 ## Visual QA Gate
 
 每张最终视觉都必须通过：
@@ -43,14 +65,15 @@
 
 ## Source 依赖规则
 
+`sources/` 无条件强制存在，不是"按需生成"。④ 的命名是 `{COURSE_CODE}_{SrcID}_{Slug}.{ext}`，`{SrcID}` 与 ③ 的 assets 前缀构成 join 关系。
+
 如果任何已交付 Markdown 引用了 `sources/` 下的文件，被引用的 source file 必须包含在同一个 Delivery ZIP 中。外部视觉必须可追溯，并明确标记为 External Supplement；不要把外部图伪装成教师课件原图。
 
 ## 交付
 
-- Week 制：`COURSE_CODE_WeekXX_Delivery.zip`
-- Unit 制：`COURSE_CODE_UnitXX_Delivery.zip`
+包名：`COURSE_CODE_Unit{NN}_Delivery.zip`（`Unit` 为占位符，实际用 `unit_scheme` 对应前缀，如 `CSI201_Week02_Delivery.zip`）。
 
-包内包含更新后的根目录 `COURSE_STATE.yaml`，以及当前 `WeekXX/` 或 `UnitXX/` 文件夹（`.md`、`assets/`，以及按依赖需要包含的 `sources/`）。
+包内包含更新后的根目录 `COURSE_STATE.yaml`，以及当前单元文件夹（`.md`、`assets/`、`sources/`）。**不含课程 `README.md`。**
 
 ## 持续课程协同
 
