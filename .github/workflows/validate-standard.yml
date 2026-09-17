@@ -21,4 +21,4 @@ jobs:
       - name: Validate version and canonical files
         run: python scripts/validate_standard.py
       - name: Smoke-test course structure checker
-        run: python scripts/check_course_structure.py --self-test
+        run: python tests/fixtures/run_course_check.py

@@ -66,9 +66,10 @@ ACTIVE_VERSION_PATTERNS = (
     r"\bv(?P<ver>\d+\.\d+(?:\.\d+)?)\b",
 )
 
-# NOTE: CHANGELOG.md and the historical docs/superpowers/** specs and plans are
-# intentionally absent from ACTIVE_FILES — they are records of superseded
-# versions and must stay free to mention v2.x / v3.0 forever.
+# NOTE: CHANGELOG.md is intentionally absent from ACTIVE_FILES — it is a record
+# of superseded versions and must stay free to mention v2.x / v3.0 forever.
+# (The historical docs/superpowers/** specs and plans were deleted on 2026-09-17:
+# finished work products, referenced by nothing, pure upkeep cost.)
 
 
 def active_version_tokens(text: str) -> set[str]:

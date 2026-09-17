@@ -2,6 +2,39 @@
 
 All notable changes to the Obsidian Course Notes Standard are documented here.
 
+## 3.1.1 — 2026-09-17
+
+Maintenance release. No rule changed; the paperwork around the rules got smaller.
+Four courses (CSI201, SOE205, COS202, EEE211) now report 0 FAIL / 0 WARN.
+
+### Removed
+
+- **Deleted `docs/superpowers/**`.** Finished work products (a v3 plan and a design
+  spec), referenced by nothing, superseded by the canonical standard. Pure upkeep
+  cost — the kind of file that looks like documentation but is only archaeology.
+
+### Changed
+
+- **`scripts/check_course_structure.py` cut from 406 to 210 lines**, with no loss of
+  enforcement. The bulk was ~130 lines of hand-built fixtures inside `checker
+  --self-test`; that flag is gone, and its job moved to
+  `tests/fixtures/run_course_check.py`, which builds a minimal compliant course,
+  breaks it one rule at a time, and asserts each rule actually fires (21 checks).
+  Runtime fixtures beat hand-maintained ones: less code, and they cannot drift
+  away from what the checker really reads.
+- Reference parsing consolidated into one `collect_refs()` covering all three
+  syntaxes a note may use (wiki embed / Markdown / raw HTML `<img src>`).
+
+### Fixed
+
+- **A3 (unreferenced asset) had never fired for three real units.** The checker
+  could not parse `<img src="assets/...">`, which CSI201/Week02, EEE211/Week01 and
+  SOE205/Week02 all use to set per-figure widths, so `referenced` came back empty.
+  The guard `elif referenced and asset.name not in referenced:` then evaluated
+  false for every asset — the checker reported clean precisely where it was blind.
+  The `referenced and` guard is gone: an unreferenced asset is a defect regardless
+  of whether its neighbours are referenced.
+
 ## 3.1.0 — 2026-09-17
 
 ### Added

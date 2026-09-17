@@ -314,10 +314,11 @@ EEE211_T01_Diode_Circuit_Analysis.pdf
 
 ```bash
 python scripts/check_course_structure.py <course_dir>
-python scripts/check_course_structure.py --self-test   # 自检，CI 使用
 ```
 
-该脚本不依赖第三方库，可直接对任意课程目录运行；`--self-test` 会构造夹具逐条验证每条规则**能够真的报错**（只报绿不报红的校验器比没有校验器更危险）。
+该脚本不依赖第三方库，可直接对任意课程目录运行。
+
+自检在 `tests/fixtures/run_course_check.py`（CI 调用）：它构造一门最小合规课程，再逐条破坏，验证每条规则**能够真的报错**，且撤销破坏后重新变干净。**只报绿不报红的校验器比没有校验器更危险**——它会把不合规交付洗成"已校验"。
 
 ---
 

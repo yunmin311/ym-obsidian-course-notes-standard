@@ -4,7 +4,7 @@
 
 **A reusable, AI-agnostic workflow for producing consistent, maintainable, source-aware, and Obsidian-ready course notes.**
 
-[![Version](https://img.shields.io/badge/version-v3.1.0-blue.svg)](../../releases/tag/v3.1.0)
+[![Version](https://img.shields.io/badge/version-v3.1.1-blue.svg)](../../releases/tag/v3.1.1)
 [![Status](https://img.shields.io/badge/status-frozen-success.svg)](#versioning)
 [![Obsidian](https://img.shields.io/badge/Obsidian-ready-7C3AED.svg)](https://obsidian.md/)
 [![Markdown](https://img.shields.io/badge/Markdown-compatible-black.svg)](https://www.markdownguide.org/)
@@ -190,7 +190,7 @@ Every final asset must pass the Visual QA Gate defined in the canonical standard
 Current stable baseline:
 
 ```text
-v3.1.0
+v3.1.1
 ```
 
 `VERSION` is the repository source of truth. Supporting execution files intentionally refer to the **canonical standard** rather than hard-coding a versioned filename wherever possible. CI rejects stale active pre-v3 release references.
@@ -221,7 +221,7 @@ To check an actual course folder against the delivery rules:
 python scripts/check_course_structure.py /path/to/COURSE_CODE
 ```
 
-This reports `FAIL` (must fix before delivery) and `WARN` (legacy naming to migrate later) for unit prefixes, note numbering, asset naming, orphan assets/sources, and the mandatory `sources/` directory. `--self-test` proves every rule can actually fire.
+This reports `FAIL` (must fix before delivery) and `WARN` (legacy naming to migrate later) for unit prefixes, note numbering, asset naming, orphan assets/sources, and the mandatory `sources/` directory. `tests/fixtures/run_course_check.py` proves every rule can actually fire.
 
 ---
 
