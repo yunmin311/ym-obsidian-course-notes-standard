@@ -51,6 +51,42 @@ ASSET_NO_PAGE_RE = re.compile(
 # Legacy sequential naming, e.g. 01-campus-access-path.png (standard 2.4.2).
 SEQUENTIAL_RE = re.compile(r"^\d{2,3}-[a-z0-9][a-z0-9-]*\.[a-z0-9]+$")
 
+# Every syntax a note may use to point at an asset. All three appear in real
+# deliveries, so all three must be parsed -- a syntax the checker cannot read is
+# indistinguishable from "asset never referenced", and that silently turns A3
+# off for the whole unit.
+RE_WIKI_EMBED = re.compile(r"!?\[\[([^\]\n]+?)\]\]")
+RE_MD_IMAGE = re.compile(r"!\[[^\]]*\]\(assets/([^)\s]+)")
+RE_HTML_IMAGE = re.compile(r"""<img\b[^>]*?\bsrc\s*=\s*["']assets/([^"'\s>]+)""")
+
+
+def collect_refs(body: str) -> set[str]:
+    """Return the bare filenames under assets/ that `body` references.
+
+    Handles, in order:
+      1. Obsidian wiki embed  ![[assets/name.png]] / ![[assets/name.png|760]]
+      2. Markdown image       ![alt](assets/name.png)
+      3. Raw HTML image       <img src="assets/name.png" width="760">
+
+    Form 3 is why this is a function and not an inline snippet: CSI201/Week02,
+    EEE211/Week01 and SOE205/Week02 all set a per-figure width that Markdown
+    cannot express, and an earlier version parsed only 1 and 2. `referenced`
+    then came back empty for those units, and because A3 was written as
+    `if referenced and asset not in referenced`, every orphan warning was
+    swallowed -- clean output backed by no evidence.
+    """
+    found: set[str] = set()
+
+    # The `|width` / `#heading` suffixes are display options, not filename parts.
+    for raw in RE_WIKI_EMBED.findall(body):
+        target = raw.split("|", 1)[0].split("#", 1)[0].strip()
+        if target.startswith("assets/"):
+            found.add(target[len("assets/"):])
+
+    found.update(RE_MD_IMAGE.findall(body))
+    found.update(RE_HTML_IMAGE.findall(body))
+    return found
+
 
 def parse_state(course_dir: Path) -> tuple[str, str, dict[str, str]]:
     """Return (course_code, unit_prefix, scalar_fields) read without a YAML dep.
@@ -152,16 +188,7 @@ def check(course_dir: Path) -> tuple[list[str], list[str]]:
         assets_dir = unit / "assets"
         referenced: set[str] = set()
         for note in notes:
-            body = note.read_text(encoding="utf-8")
-            # Obsidian wiki embed: ![[assets/name.png]] or ![[assets/name.png|760]]
-            # The trailing `|width` / `#heading` display options are not part of
-            # the filename, so they must be stripped before comparing.
-            for raw in re.findall(r"!?\[\[([^\]\n]+?)\]\]", body):
-                target = raw.split("|", 1)[0].split("#", 1)[0].strip()
-                if target.startswith("assets/"):
-                    referenced.add(target[len("assets/"):])
-            # Markdown image: ![alt](assets/name.png)
-            referenced.update(re.findall(r"!\[[^\]]*\]\(assets/([^)\s]+)", body))
+            referenced |= collect_refs(note.read_text(encoding="utf-8"))
 
         if assets_dir.is_dir():
             for asset in sorted(p for p in assets_dir.iterdir() if p.is_file()):
@@ -186,9 +213,9 @@ def check(course_dir: Path) -> tuple[list[str], list[str]]:
                             f"A2: {unit.name}/assets/{asset.name!r} has no matching note "
                             f"({key} not in this unit)"
                         )
-                    elif referenced and asset.name not in referenced:
+                    elif asset.name not in referenced:
                         warns.append(f"A3: {unit.name}/assets/{asset.name!r} is never referenced")
-                elif referenced and asset.name not in referenced:
+                elif asset.name not in referenced:
                     warns.append(f"A3: {unit.name}/assets/{asset.name!r} is never referenced")
 
         # --- sources ------------------------------------------------------
@@ -274,6 +301,38 @@ def _build_fixture(root: Path, scheme_line: str = "  unit_scheme: week\n") -> Pa
     return course
 
 
+def _build_html_ref_fixture(root: Path) -> Path:
+    """Separate unit exercising the third reference syntax: raw HTML <img>.
+
+    Regression guard. Real deliveries (CSI201/Week02, EEE211/Week01,
+    SOE205/Week02) reference assets as `<img src="assets/...">` to set a
+    per-figure width. When the parser only understood wiki-embeds and Markdown
+    images, `referenced` came back EMPTY for those units and the old
+    `referenced and ...` guard swallowed every A3 warning -- green output with
+    no evidence behind it. Assert both the hit and the miss here.
+    """
+    course = root / "HTM101"
+    (course / "Week01" / "assets").mkdir(parents=True)
+    (course / "Week01" / "sources").mkdir(parents=True)
+    (course / "COURSE_STATE.yaml").write_text(
+        "schema: obsidian-course-state/v1\n"
+        "course_code: HTM101\n"
+        'standard_version: "3.1"\n'
+        "structure:\n"
+        "  unit_scheme: week\n"
+        "  current_unit: 1\n",
+        encoding="utf-8",
+    )
+    (course / "Week01" / "Lecture 01 - Html.md").write_text(
+        '<img src="assets/L01-p20-shown.png" alt="shown" width="760">\n',
+        encoding="utf-8",
+    )
+    (course / "Week01" / "assets" / "L01-p20-shown.png").write_bytes(b"x")
+    (course / "Week01" / "assets" / "L01-p21-hidden.png").write_bytes(b"x")
+    (course / "Week01" / "sources" / "HTM101_L01_Topic.pdf").write_bytes(b"x")
+    return course
+
+
 def self_test() -> int:
     """Prove every rule fires. Run in CI so the checker cannot rot silently.
 
@@ -314,6 +373,23 @@ def self_test() -> int:
         missing_fails, _ = check(course)
         checks.append(
             ("S1 fires when sources/ missing", any("S1:" in f for f in missing_fails))
+        )
+
+    # Raw HTML <img src="assets/..."> must register as a reference, and must NOT
+    # mask the unreferenced neighbour. This is the regression pair for the bug
+    # where an unparsed syntax silently disabled A3 for a whole unit.
+    with tempfile.TemporaryDirectory() as tmp:
+        html_course = _build_html_ref_fixture(Path(tmp))
+        html_fails, html_warns = check(html_course)
+        html_w = "\n".join(html_warns)
+        checks.append(
+            ("A3 silent for asset referenced via <img src=...>", "L01-p20-shown" not in html_w)
+        )
+        checks.append(
+            ("A3 still fires for unreferenced asset in an <img src=...> unit", "L01-p21-hidden" in html_w)
+        )
+        checks.append(
+            ("no false A2/A1 on <img src=...> unit", not html_fails)
         )
 
     failures = [name for name, ok in checks if not ok]
